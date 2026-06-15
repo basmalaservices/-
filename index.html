@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BH.Agency | Premium Restaurant POS</title>
+    <style>
+        /* Base Styling aligned with BH.Agency Identity - Light Professional Variant */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f4f6f9; /* خلفية فاتحة مريحة للعين ومناسبة للعمل الطويل */
+            color: #212529;            /* نصوص داكنة واضحة جداً */
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Top Bar Info */
+        .pos-header {
+            background-color: #ffffff;
+            padding: 15px 3%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+            z-index: 10;
+        }
+
+        .pos-logo {
+            font-size: 18px;
+            font-weight: 700;
+            color: #00b4d8; /* لون براند واضح ومتناسق مع الخلفية البيضاء */
+            letter-spacing: 0.5px;
+        }
+
+        .admin-btn {
+            background: transparent;
+            border: 1px solid #ff007f;
+            color: #ff007f;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .admin-btn:hover {
+            background: #ff007f;
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(255, 0, 127, 0.2);
+        }
+
+        /* Main Workspace Grid */
+        .pos-container {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Left Side: Products and Categories */
+        .products-section {
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            background: #f8fafc;
+        }
+
+        /* Search & Filters Controls */
+        .controls-row {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 12px 15px;
+            color: #334155;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-bar input:focus {
+            border-color: #00b4d8;
+            box-shadow: 0 0 10px rgba(0, 180, 216, 0.15);
+        }
+
+        .categories-filter {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+        .categories-filter::-webkit-scrollbar { display: none; }
+
+        .cat-btn {
+            background: #ffffff;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .cat-btn:hover, .cat-btn.active {
+            color: #ffffff;
+            background: #00b4d8;
+            border-color: #00b4d8;
+            box-shadow: 0 4px 10px rgba(0, 180, 216, 0.25);
+        }
+
+        /* Products Grid Setup */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
+        }
+
+        .product-card {
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            transition: all 0.2s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(255, 0, 127, 0.3);
+            box-shadow: 0 8px 15px rgba(255, 0, 127, 0.1);
+        }
+
+        .product-card h4 {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-top: 5px;
+            margin-bottom: 6px;
+        }
+
+        .product-card .price {
+            font-size: 13px;
+            color: #ff007f;
+            font-weight: 700;
+        }
+
+        /* Right Side: Order Terminal */
+        .order-terminal {
+            background-color: #ffffff;
+            border-left: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: transform 0.3s ease-in-out;
+            z-index: 95;
+            box-shadow: -4px 0 10px rgba(0,0,0,0.01);
+        }
+
+        .terminal-header {
+            padding: 20px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #1e293b;
+        }
+
+        .close-cart-mobile { display: none; }
+
+        .cart-items-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px 20px;
+            background: #fdfdfd;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #ffffff;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border: 1px solid #e2e8f0;
+            border-left: 3px solid #00b4d8;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+        }
+
+        .item-details h5 { font-size: 13px; color: #1e293b; margin-bottom: 3px; }
+        .item-details span { font-size: 12px; color: #ff007f; font-weight: 600; }
+        .item-controls { display: flex; align-items: center; gap: 8px; }
+
+        .qty-btn {
+            background: #f1f5f9; color: #334155; border: none;
+            width: 24px; height: 24px; border-radius: 4px;
+            cursor: pointer; font-weight: bold;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .qty-btn:hover { background: #ff007f; color: #ffffff; }
+        .delete-item { color: #94a3b8; background: transparent; border: none; cursor: pointer; font-size: 16px; margin-left: 5px; }
+        .delete-item:hover { color: #ef4444; }
+
+        .checkout-panel { background: #ffffff; padding: 20px; border-top: 1px solid #e2e8f0; }
+        .summary-row { display: flex; justify-content: space-between; font-size: 13px; color: #64748b; margin-bottom: 8px; }
+        .summary-row.total-row { border-top: 1px dashed #e2e8f0; margin-top: 12px; padding-top: 12px; font-size: 16px; font-weight: 700; color: #00b4d8; }
+
+        .pay-btn {
+            width: 100%; background: #ff007f; color: #fff; border: none; padding: 14px; border-radius: 8px;
+            font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 15px; box-shadow: 0 4px 12px rgba(255, 0, 127, 0.2);
+        }
+        .pay-btn:hover { background: #00b4d8; color: #fff; box-shadow: 0 4px 15px rgba(0, 180, 216, 0.3); }
+
+        .empty-cart-text { color: #94a3b8; text-align: center; font-size: 13px; margin-top: 40px; }
+
+        /* Mobile Floating Cart Button Trigger */
+        .mobile-cart-trigger {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #ff007f;
+            color: #fff;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 14px;
+            box-shadow: 0 4px 15px rgba(255, 0, 127, 0.3);
+            z-index: 90;
+            cursor: pointer;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Modals and Popups */
+        .invoice-modal, .admin-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 9999; justify-content: center; align-items: center; padding: 15px;
+        }
+        .receipt-box { background: #ffffff; color: #000000; width: 100%; max-width: 340px; padding: 20px; border-radius: 4px; font-family: 'Courier New', Courier, monospace; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .receipt-box h4 { text-align: center; margin-bottom: 5px; }
+        .receipt-box p { text-align: center; font-size: 12px; color: #555; }
+        .receipt-line { border-bottom: 1px dashed #000; margin: 10px 0; }
+        .receipt-item { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; }
+
+        /* Admin Box - Restyled for Light Mode */
+        .admin-box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; width: 100%; max-width: 950px; max-height: 90vh; padding: 25px; display: flex; flex-direction: column; overflow-y: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.1); color: #1e293b; }
+        .analytics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 15px 0; }
+        .analytics-card { background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; border-left: 4px solid #ff007f; }
+        .analytics-card.prime { border-left-color: #00b4d8; }
+        .analytics-card span { font-size: 11px; color: #64748b; display: block; font-weight: 600; }
+        .analytics-card h2 { font-size: 16px; color: #0f172a; margin-top: 5px; }
+
+        .admin-sections-wrapper { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; flex: 1; min-height: 300px; }
+        .sales-table-wrapper, .inventory-wrapper { border: 1px solid #e2e8f0; border-radius: 6px; overflow-y: auto; background: #ffffff; padding: 10px; }
+        .sales-table, .inventory-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .sales-table th, .sales-table td, .inventory-table th, .inventory-table td { padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: left; color: #334155; }
+        .sales-table th, .inventory-table th { background: #f1f5f9; color: #475569; font-weight: 600; }
+
+        .crud-form { background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #e2e8f0; display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+        .crud-form label { font-size: 11px; color: #475569; font-weight: 600; display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 120px; }
+        .crud-form input, .crud-form select { background: #ffffff; border: 1px solid #cbd5e1; color: #1e293b; padding: 6px; border-radius: 4px; outline: none; }
+        .crud-form button { padding: 6px 15px; background: #00b4d8; border: none; color: #ffffff; font-weight: bold; border-radius: 4px; cursor: pointer; transition: background 0.2s; }
+        .crud-form button:hover { background: #ff007f; color: #fff; }
+
+        /* Responsive Layout Overrides for Mobile View 📱 */
+        @media (max-width: 900px) {
+            .pos-container { grid-template-columns: 1fr; }
+            .order-terminal { position: fixed; top: 0; right: 0; width: 100%; height: 100%; transform: translateX(100%); }
+            .order-terminal.active-mobile-cart { transform: translateX(0); }
+            .close-cart-mobile { display: block; background: #e2e8f0; color: #334155; border: none; padding: 6px 12px; border-radius: 4px; font-weight: 600; font-size: 12px; cursor: pointer; }
+            .mobile-cart-trigger { display: flex; }
+            .products-section { padding: 15px; }
+            .analytics-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .admin-sections-wrapper { grid-template-columns: 1fr; }
+        }
+
+        @media print {
+            body * { display: none !important; }
+            #bill-modal, #bill-modal * { display: block !important; }
+            .receipt-box { position: absolute; top: 0; left: 0; width: 100%; box-shadow: none; padding: 0; }
+            .receipt-actions { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="pos-header">
+        <div class="pos-logo">BH.AGENCY // POS</div>
+        <div class="pos-meta">
+            <button class="admin-btn" onclick="openAdminLog()">📊 Control & Analytics</button>
+        </div>
+    </div>
+
+    <div class="pos-container">
+        <div class="products-section">
+            <div class="controls-row">
+                <div class="search-bar">
+                    <input type="text" id="search-input" placeholder="Search item..." oninput="filterProducts()">
+                </div>
+                <div class="categories-filter">
+                    <button class="cat-btn active" onclick="switchCategory('all', this)">All</button>
+                    <button class="cat-btn" onclick="switchCategory('burger', this)">Burgers</button>
+                    <button class="cat-btn" onclick="switchCategory('drinks', this)">Drinks</button>
+                    <button class="cat-btn" onclick="switchCategory('desserts', this)">Desserts</button>
+                </div>
+            </div>
+            <div class="products-grid" id="products-grid-container"></div>
+        </div>
+
+        <div class="order-terminal" id="order-terminal-panel">
+            <div class="terminal-header">
+                <h3>Active Order</h3>
+                <button class="close-cart-mobile" onclick="toggleMobileCart(false)">⬅ Back to Menu</button>
+            </div>
+            <div class="cart-items-container" id="cart-items-wrapper">
+                <div class="empty-cart-text">Terminal Empty. Select items to construct invoice order.</div>
+            </div>
+            <div class="checkout-panel">
+                <div class="summary-row"><span>Subtotal</span><span id="subtotal-val">0.00 EGP</span></div>
+                <div class="summary-row"><span>Tax (14%)</span><span id="tax-val">0.00 EGP</span></div>
+                <div class="summary-row total-row"><span>Total Amount</span><span id="total-val">0.00 EGP</span></div>
+                <button class="pay-btn" onclick="triggerCheckout()">Complete & Print Bill</button>
+            </div>
+        </div>
+    </div>
+
+    <button class="mobile-cart-trigger" onclick="toggleMobileCart(true)">
+        <span>🛒 View Active Order</span>
+        <span id="mobile-badge" style="background:#fff; color:#ff007f; padding:2px 8px; border-radius:10px; font-size:12px;">0</span>
+    </button>
+
+    <div class="admin-modal" id="admin-modal">
+        <div class="admin-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="color: #00b4d8;">Owner Control Center & Analytics</h3>
+                <button class="admin-btn" style="border-color:#334155; color:#334155;" onclick="closeAdminLog()">Close Panel</button>
+            </div>
+
+            <div class="analytics-grid">
+                <div class="analytics-card prime"><span>TODAY'S REVENUE</span><h2 id="dash-today-revenue">0.00 EGP</h2></div>
+                <div class="analytics-card"><span>TODAY'S ORDERS</span><h2 id="dash-today-count">0</h2></div>
+                <div class="analytics-card prime"><span>CURRENT MONTH REVENUE</span><h2 id="dash-month-revenue">0.00 EGP</h2></div>
+                <div class="analytics-card"><span>ALL-TIME TOTAL</span><h2 id="dash-all-revenue">0.00 EGP</h2></div>
+            </div>
+
+            <div class="crud-form">
+                <label>Item Name
+                    <input type="text" id="crud-name" placeholder="e.g., Cheesy Fries">
+                </label>
+                <label>Price (EGP)
+                    <input type="number" id="crud-price" step="0.01" placeholder="80.00">
+                </label>
+                <label>Category
+                    <select id="crud-category">
+                        <option value="burger">Burgers</option>
+                        <option value="drinks">Drinks</option>
+                        <option value="desserts">Desserts</option>
+                    </select>
+                </label>
+                <label>Icon Emoji
+                    <input type="text" id="crud-img" placeholder="🍟" style="max-width: 60px; text-align: center;">
+                </label>
+                <button onclick="saveProductDynamic()">Add / Update Product</button>
+            </div>
+
+            <div class="admin-sections-wrapper">
+                <div class="sales-table-wrapper">
+                    <h4 style="color:#ff007f; margin-bottom: 10px;">Sales Ledger</h4>
+                    <table class="sales-table">
+                        <thead>
+                            <tr><th>Timestamp</th><th>Details</th><th>Total</th></tr>
+                        </thead>
+                        <tbody id="sales-log-rows"></tbody>
+                    </table>
+                </div>
+
+                <div class="inventory-wrapper">
+                    <h4 style="color:#00b4d8; margin-bottom: 10px;">Dynamic Menu Controls</h4>
+                    <table class="inventory-table">
+                        <thead>
+                            <tr><th>Item</th><th>Category</th><th>Price</th><th>Action</th></tr>
+                        </thead>
+                        <tbody id="inventory-rows"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="invoice-modal" id="bill-modal">
+        <div class="receipt-box">
+            <h4>BH.AGENCY RESTAURANT</h4>
+            <p>123 Digital Neon Street, Cairo</p>
+            <div class="receipt-line"></div>
+            <div style="font-size: 11px; margin-bottom: 10px;">Date: <span id="receipt-date">--</span><br>Cashier: Terminal 01</div>
+            <div class="receipt-line"></div>
+            <div id="receipt-items-list"></div>
+            <div class="receipt-line"></div>
+            <div class="receipt-total-section">
+                <div class="receipt-item"><span>SUBTOTAL:</span><span id="r-subtotal">0.00</span></div>
+                <div class="receipt-item"><span>VAT TAX (14%):</span><span id="r-tax">0.00</span></div>
+                <div class="receipt-item" style="font-size: 14px; margin-top: 5px;"><span>TOTAL PAID:</span><span id="r-total">0.00 EGP</span></div>
+            </div>
+            <div class="receipt-line"></div>
+            <p style="text-align: center; font-style: italic; margin-top: 10px;">Thank you for your visit!</p>
+            <div class="receipt-actions" style="display: flex; gap: 10px; margin-top: 15px;">
+                <button style="flex:1; padding: 10px; background: #ddd; border: none; cursor:pointer;" onclick="closeInvoice()">Close</button>
+                <button style="flex:1; padding: 10px; background: #ff007f; color:#fff; border: none; cursor:pointer;" onclick="window.print()">Print</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // رابط الـ Web App الخاص بـ Google Apps Script لترحيل البيانات للشيت مباشرة
+        const GOOGLE_SHEET_URL = "YOUR_SCRIPT_URL_HERE"; 
+
+        // المنيو المحدث مع الإضافات الإنجليزية المطلوبة بالكامل
+        let menuProducts = JSON.parse(localStorage.getItem('bh_pos_menu')) || [
+            { id: 1, name: 'Classic Beef Burger', price: 140.00, category: 'burger', img: '🍔' },
+            { id: 2, name: 'Double Cheese Burger', price: 180.00, category: 'burger', img: '🍔' },
+            { id: 3, name: 'Crispy Chicken Sandwich', price: 130.00, category: 'burger', img: '🥪' },
+            { id: 4, name: 'French Fries XL', price: 50.00, category: 'burger', img: '🍟' },
+            // قسم المشروبات المحدث (Drinks)
+            { id: 5, name: 'Mineral Water', price: 15.00, category: 'drinks', img: '💧' },
+            { id: 6, name: 'Hot Tea', price: 25.00, category: 'drinks', img: '☕' },
+            { id: 7, name: 'Espresso Coffee', price: 45.00, category: 'drinks', img: '☕' },
+            { id: 8, name: 'Fresh Orange Juice', price: 40.00, category: 'drinks', img: '🍊' },
+            { id: 9, name: 'Cold Brew Iced Coffee', price: 65.00, category: 'drinks', img: '🥤' },
+            // قسم الحلويات المحدث (Desserts)
+            { id: 10, name: 'Glazed Chocolate Donut', price: 45.00, category: 'desserts', img: '🍩' },
+            { id: 11, name: 'Lotus Biscoff Donut', price: 50.00, category: 'desserts', img: '🍩' },
+            { id: 12, name: 'Chocolate Fudge Cake', price: 75.00, category: 'desserts', img: '🍰' },
+            { id: 13, name: 'Premium Vanilla Ice Cream', price: 60.00, category: 'desserts', img: '🍦' }
+        ];
+
+        let activeCart = [];
+        let chosenCategory = 'all';
+        let globalSalesLog = JSON.parse(localStorage.getItem('bh_pos_sales_log')) || [];
+
+        function renderMenuGrid() {
+            const grid = document.getElementById('products-grid-container');
+            const searchKeyword = document.getElementById('search-input').value.toLowerCase();
+            grid.innerHTML = '';
+
+            menuProducts.forEach(product => {
+                if (chosenCategory !== 'all' && product.category !== chosenCategory) return;
+                if (searchKeyword && !product.name.toLowerCase().includes(searchKeyword)) return;
+
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.onclick = () => addProductToCart(product.id);
+                card.innerHTML = `
+                    <div style="font-size: 32px; margin-bottom: 5px;">${product.img}</div>
+                    <h4>${product.name}</h4>
+                    <div class="price">${parseFloat(product.price).toFixed(2)} EGP</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function toggleMobileCart(open) {
+            const panel = document.getElementById('order-terminal-panel');
+            if(open) panel.classList.add('active-mobile-cart');
+            else panel.classList.remove('active-mobile-cart');
+        }
+
+        function switchCategory(catName, btnElement) {
+            chosenCategory = catName;
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+            renderMenuGrid();
+        }
+
+        function filterProducts() { renderMenuGrid(); }
+
+        function addProductToCart(id) {
+            const matchIndex = activeCart.findIndex(item => item.product.id === id);
+            if (matchIndex > -1) {
+                activeCart[matchIndex].qty += 1;
+            } else {
+                const targetProduct = menuProducts.find(p => p.id === id);
+                activeCart.push({ product: targetProduct, qty: 1 });
+            }
+            updateCartTerminalView();
+        }
+
+        function alterQuantity(id, delta) {
+            const idx = activeCart.findIndex(item => item.product.id === id);
+            if (idx > -1) {
+                activeCart[idx].qty += delta;
+                if (activeCart[idx].qty <= 0) { activeCart.splice(idx, 1); }
+                updateCartTerminalView();
+            }
+        }
+
+        function purgeCartItem(id) {
+            activeCart = activeCart.filter(item => item.product.id !== id);
+            updateCartTerminalView();
+        }
+
+        function updateCartTerminalView() {
+            const wrapper = document.getElementById('cart-items-wrapper');
+            let totalItemsCount = 0;
+
+            if (activeCart.length === 0) {
+                wrapper.innerHTML = '<div class="empty-cart-text">Terminal Empty. Select items to construct invoice order.</div>';
+                document.getElementById('subtotal-val').innerText = '0.00 EGP';
+                document.getElementById('tax-val').innerText = '0.00 EGP';
+                document.getElementById('total-val').innerText = '0.00 EGP';
+                document.getElementById('mobile-badge').innerText = '0';
+                return;
+            }
+
+            wrapper.innerHTML = '';
+            let calculatedSubtotal = 0;
+
+            activeCart.forEach(entry => {
+                const itemCost = entry.product.price * entry.qty;
+                calculatedSubtotal += itemCost;
+                totalItemsCount += entry.qty;
+
+                const row = document.createElement('div');
+                row.className = 'cart-item';
+                row.innerHTML = `
+                    <div class="item-details">
+                        <h5>${entry.product.name}</h5>
+                        <span>${itemCost.toFixed(2)} EGP</span>
+                    </div>
+                    <div class="item-controls">
+                        <button class="qty-btn" onclick="alterQuantity(${entry.product.id}, -1)">-</button>
+                        <span style="font-size:13px; font-weight:600; color:#1e293b;">${entry.qty}</span>
+                        <button class="qty-btn" onclick="alterQuantity(${entry.product.id}, 1)">+</button>
+                        <button class="delete-item" onclick="purgeCartItem(${entry.product.id})">×</button>
+                    </div>
+                `;
+                wrapper.appendChild(row);
+            });
+
+            const calculatedTax = calculatedSubtotal * 0.14;
+            const absoluteTotal = calculatedSubtotal + calculatedTax;
+
+            document.getElementById('subtotal-val').innerText = `${calculatedSubtotal.toFixed(2)} EGP`;
+            document.getElementById('tax-val').innerText = `${calculatedTax.toFixed(2)} EGP`;
+            document.getElementById('total-val').innerText = `${absoluteTotal.toFixed(2)} EGP`;
+            document.getElementById('mobile-badge').innerText = totalItemsCount;
+        }
+
+        function triggerCheckout() {
+            if (activeCart.length === 0) return;
+
+            const listArea = document.getElementById('receipt-items-list');
+            listArea.innerHTML = '';
+            let runningSub = 0;
+            let itemsSummaryArray = [];
+
+            activeCart.forEach(entry => {
+                const cost = entry.product.price * entry.qty;
+                runningSub += cost;
+                itemsSummaryArray.push(`${entry.qty}x ${entry.product.name}`);
+                
+                const rRow = document.createElement('div');
+                rRow.className = 'receipt-item';
+                rRow.innerHTML = `<span>${entry.qty}x ${entry.product.name}</span><span>${cost.toFixed(2)}</span>`;
+                listArea.appendChild(rRow);
+            });
+
+            const tax = runningSub * 0.14;
+            const net = runningSub + tax;
+
+            document.getElementById('r-subtotal').innerText = runningSub.toFixed(2);
+            document.getElementById('r-tax').innerText = tax.toFixed(2);
+            document.getElementById('r-total').innerText = `${net.toFixed(2)} EGP`;
+            
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-US'); 
+            const timeStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            const fullTimestamp = `${dateStr} ${timeStr}`;
+            
+            document.getElementById('receipt-date').innerText = fullTimestamp;
+
+            const newOrderRecord = {
+                date: dateStr,
+                monthKey: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`, 
+                timestamp: fullTimestamp,
+                items: itemsSummaryArray.join(', '),
+                total: `${net.toFixed(2)} EGP`,
+                rawTotal: net
+            };
+            
+            globalSalesLog.push(newOrderRecord);
+            localStorage.setItem('bh_pos_sales_log', JSON.stringify(globalSalesLog));
+
+            sendOrderToGoogleSheets(newOrderRecord);
+
+            document.getElementById('bill-modal').style.display = 'flex';
+        }
+
+        function sendOrderToGoogleSheets(orderData) {
+            if (GOOGLE_SHEET_URL === "YOUR_SCRIPT_URL_HERE") return;
+
+            fetch(GOOGLE_SHEET_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(orderData)
+            })
+            .then(() => console.log("Order synced to Cloud Storage successfully."))
+            .catch(err => console.error("Cloud Sync Failed, saved locally:", err));
+        }
+
+        function closeInvoice() {
+            document.getElementById('bill-modal').style.display = 'none';
+            activeCart = [];
+            updateCartTerminalView();
+            toggleMobileCart(false);
+        }
+
+        // الدالة المحدثة مع تلميح الباسورد الذكي للمقيمين والزوار
+        function openAdminLog() {
+            const password = prompt("Enter Admin Password (For Testing use: 1234):");
+            if (password === "1234") {
+                renderAdminDashboard();
+                document.getElementById('admin-modal').style.display = 'flex';
+            } else if (password !== null) {
+                alert("Access Denied.");
+            }
+        }
+
+        function closeAdminLog() {
+            document.getElementById('admin-modal').style.display = 'none';
+        }
+
+        function renderAdminDashboard() {
+            const tbody = document.getElementById('sales-log-rows');
+            tbody.innerHTML = '';
+            
+            const now = new Date();
+            const todayStr = now.toLocaleDateString('en-US');
+            const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+            let todayRevenue = 0;
+            let todayCount = 0;
+            let monthRevenue = 0;
+            let allTimeRevenue = 0;
+
+            globalSalesLog.forEach(sale => {
+                allTimeRevenue += sale.rawTotal;
+                
+                if(sale.date === todayStr) {
+                    todayRevenue += sale.rawTotal;
+                    todayCount++;
+                }
+
+                if (sale.monthKey === currentMonthKey || (sale.date && sale.date.startsWith(todayStr.substring(0,2)))) {
+                    monthRevenue += sale.rawTotal;
+                }
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${sale.timestamp}</td>
+                    <td style="color:#00b4d8;">${sale.items}</td>
+                    <td style="color:#ff007f; font-weight:bold;">${sale.total}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            document.getElementById('dash-today-revenue').innerText = `${todayRevenue.toFixed(2)} EGP`;
+            document.getElementById('dash-today-count').innerText = todayCount;
+            document.getElementById('dash-month-revenue').innerText = `${monthRevenue.toFixed(2)} EGP`;
+            document.getElementById('dash-all-revenue').innerText = `${allTimeRevenue.toFixed(2)} EGP`;
+
+            renderInventoryManagement();
+        }
+
+        function renderInventoryManagement() {
+            const invBody = document.getElementById('inventory-rows');
+            invBody.innerHTML = '';
+
+            menuProducts.forEach((product, idx) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${product.img} ${product.name}</td>
+                    <td style="text-transform: capitalize; color:#64748b;">${product.category}</td>
+                    <td><input type="number" step="0.1" value="${product.price}" style="width:70px; background:#ffffff; border:1px solid #cbd5e1; color:#1e293b; padding:3px; text-align:center;" onchange="updateInlinePrice(${product.id}, this.value)"> EGP</td>
+                    <td><button style="background:transparent; border:none; color:#ff007f; cursor:pointer; font-weight:bold; font-size:14px;" onclick="removeProductDynamic(${product.id})">Delete</button></td>
+                `;
+                invBody.appendChild(row);
+            });
+        }
+
+        function updateInlinePrice(id, newPrice) {
+            const idx = menuProducts.findIndex(p => p.id === id);
+            if(idx > -1 && !isNaN(parseFloat(newPrice))) {
+                menuProducts[idx].price = parseFloat(newPrice);
+                localStorage.setItem('bh_pos_menu', JSON.stringify(menuProducts));
+                renderMenuGrid();
+            }
+        }
+
+        function removeProductDynamic(id) {
+            if(confirm("Are you sure you want to delete this item?")) {
+                menuProducts = menuProducts.filter(p => p.id !== id);
+                localStorage.setItem('bh_pos_menu', JSON.stringify(menuProducts));
+                renderMenuGrid();
+                renderInventoryManagement();
+            }
+        }
+
+        function saveProductDynamic() {
+            const name = document.getElementById('crud-name').value.trim();
+            const price = parseFloat(document.getElementById('crud-price').value);
+            const category = document.getElementById('crud-category').value;
+            const img = document.getElementById('crud-img').value.trim() || '🍽️';
+
+            if (!name || isNaN(price)) {
+                alert("Please fill name and price correctly.");
+                return;
+            }
+
+            const existingIdx = menuProducts.findIndex(p => p.name.toLowerCase() === name.toLowerCase());
+            if(existingIdx > -1) {
+                menuProducts[existingIdx].price = price;
+                menuProducts[existingIdx].category = category;
+                menuProducts[existingIdx].img = img;
+            } else {
+                const newId = menuProducts.length > 0 ? Math.max(...menuProducts.map(p => p.id)) + 1 : 1;
+                menuProducts.push({ id: newId, name, price, category, img });
+            }
+
+            localStorage.setItem('bh_pos_menu', JSON.stringify(menuProducts));
+            renderMenuGrid();
+            renderAdminDashboard();
+            
+            // تنظيف الحقول بعد الحفظ
+            document.getElementById('crud-name').value = '';
+            document.getElementById('crud-price').value = '';
+            document.getElementById('crud-img').value = '';
+        }
+
+        // التشغيل المبدئي للشبكة عند فتح الصفحة
+        renderMenuGrid();
+    </script>
+</body>
+</html>
